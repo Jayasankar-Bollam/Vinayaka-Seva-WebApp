@@ -8,8 +8,8 @@ const app = express();
 const cors = require('cors');
 const allowedOrigins = [
   'http://localhost:5173',
-  process.env.CLIENT_URL
-].filter(Boolean);
+  'https://vinayaka-seva-web-app.vercel.app'
+];
 
 app.use(cors({
   origin: function (origin, callback) {
