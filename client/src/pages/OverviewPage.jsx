@@ -60,7 +60,7 @@ export default function OverviewPage() {
       className="relative min-h-screen bg-cover bg-center bg-fixed bg-no-repeat"
       style={{
         backgroundImage: organization.backgroundUrl
-          ? `url(http://localhost:5000${organization.backgroundUrl})`
+          ? `url(${import.meta.env.VITE_SERVER_URL}${organization.backgroundUrl})`
           : 'linear-gradient(to bottom, #fff7ed, #ffffff)',
           backgroundSize: organization.backgroundUrl ? '400px auto' : 'cover',
           backgroundColor: '#1a1a1a',
