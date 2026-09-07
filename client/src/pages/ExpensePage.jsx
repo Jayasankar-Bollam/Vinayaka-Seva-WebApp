@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import api from '../api/axios';
 import SelectWithOther from '../components/SelectWithOther';
 import { Pencil, Trash2 } from 'lucide-react';
+import FadeInOnScroll from '../components/FadeInOnScroll';
 
 const CATEGORIES = ['Pooja Items', 'Lighting/Deepam', 'Flowers', 'Prasadam', 'Maintenance'];
 const PURPOSES = ['Oil', 'Camphor', 'Flowers', 'Decoration', 'Electricity'];
@@ -241,6 +242,7 @@ export default function ExpensePage() {
       {/* Mobile: cards */}
       <div className="md:hidden flex flex-col gap-3">
         {expenses.map((e, index) => (
+          <FadeInOnScroll key={e._id}>
           <div key={e._id} className="bg-white rounded-lg shadow-sm p-4">
             <div className="flex justify-between items-start mb-2">
               <div>
@@ -272,6 +274,7 @@ export default function ExpensePage() {
               </div>
             </div>
           </div>
+           </FadeInOnScroll>
         ))}
       </div>
     </div>

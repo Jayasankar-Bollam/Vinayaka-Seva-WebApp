@@ -4,10 +4,10 @@ import toast from 'react-hot-toast';
 import api from '../api/axios';
 import SelectWithOther from '../components/SelectWithOther';
 import { Pencil, Trash2 } from 'lucide-react';
-
+import FadeInOnScroll from '../components/FadeInOnScroll';
 
 // const CHANDA_TYPES = ['Monthly', 'Yearly', 'One-time', 'Festival'];
-const PAYMENT_MODES = ['Cash', 'PhonePe', 'GPay', 'Bank Transfer'];
+const PAYMENT_MODES = ['Cash', 'PhonePe'];
 
 const CURRENT_YEAR = new Date().getFullYear();
 const YEAR_OPTIONS = [];
@@ -30,11 +30,13 @@ export default function ChandaPage() {
   const [chandas, setChandas] = useState([]);
   const [search, setSearch] = useState('');
   const [year, setYear] = useState('');
+  const [sortOrder, setSortOrder] = useState('desc'); // 'desc' = highest first
   const [form, setForm] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
   const formRef = useRef(null);
-
+  const [paymentFilter, setPaymentFilter] = useState('');
+ 
   async function fetchChandas() {
     const res = await api.get('/chandas', { params: { search, year: year || undefined } });
     setChandas(res.data);
@@ -110,13 +112,13 @@ export default function ChandaPage() {
     try {
       const now = new Date();
       const res = await api.get('/reports/chanda', {
-        params: { year: now.getFullYear(), month: now.getMonth() + 1 },
+        params: { year: now.getFullYear() },
         responseType: 'blob',
       });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `chanda-report-${now.getFullYear()}-${now.getMonth() + 1}.pdf`);
+      link.setAttribute('download', `chanda-report-${now.getFullYear()}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -125,9 +127,26 @@ export default function ChandaPage() {
       toast.error('Failed to download report');
     }
   }
+    
+const paymentTotals = chandas.reduce((acc, c) => {
+  const mode = c.paymentMode.value === 'Other' ? c.paymentMode.customValue : c.paymentMode.value;
+  acc[mode] = (acc[mode] || 0) + c.amount;
+  return acc;
+}, {});
 
-  return (
-    <div className="p-4 md:p-6">
+const filteredChandas = paymentFilter
+  ? chandas.filter((c) => {
+      const mode = c.paymentMode.value === 'Other' ? c.paymentMode.customValue : c.paymentMode.value;
+      return mode === paymentFilter;
+    })
+  : chandas;
+
+const sortedChandas = [...filteredChandas].sort((a, b) =>
+  sortOrder === 'desc' ? b.amount - a.amount : a.amount - b.amount
+);
+
+return(    
+<div className="p-4 md:p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-orange-700">Chanda Entries</h2>
         <button
@@ -218,6 +237,12 @@ export default function ChandaPage() {
           onChange={(e) => setSearch(e.target.value)}
           className="border rounded-md px-3 py-2 text-sm flex-1"
         />
+        <button
+  onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
+  className="border rounded-md px-3 py-2 text-sm bg-white hover:bg-gray-50"
+>
+  Amount: {sortOrder === 'desc' ? 'High → Low' : 'Low → High'}
+</button>
         <select
           value={year}
           onChange={(e) => setYear(e.target.value)}
@@ -229,6 +254,31 @@ export default function ChandaPage() {
           ))}
         </select>
       </div>
+       
+{Object.keys(paymentTotals).length > 0 && (
+  <div className="flex flex-wrap gap-3 mb-4">
+    <button
+      onClick={() => setPaymentFilter('')}
+      className={`rounded-lg shadow-sm px-4 py-2 text-sm ${
+        paymentFilter === '' ? 'bg-orange-700 text-white' : 'bg-white text-gray-700'
+      }`}
+    >
+      All
+    </button>
+    {Object.entries(paymentTotals).map(([mode, total]) => (
+      <button
+        key={mode}
+        onClick={() => setPaymentFilter(mode)}
+        className={`rounded-lg shadow-sm px-4 py-2 text-sm ${
+          paymentFilter === mode ? 'bg-orange-700 text-white' : 'bg-white text-gray-700'
+        }`}
+      >
+        <span className={paymentFilter === mode ? 'text-orange-100' : 'text-gray-500'}>{mode}: </span>
+        <span className="font-semibold">₹{total.toLocaleString('en-IN')}</span>
+      </button>
+    ))}
+  </div>
+)}
 
       {/* Desktop: table */}
       <table className="w-full bg-white rounded-lg shadow-sm text-sm hidden md:table">
@@ -245,7 +295,7 @@ export default function ChandaPage() {
           </tr>
         </thead>
         <tbody>
-          {chandas.map((c, index) => (
+          {sortedChandas.map((c, index) => (
             <tr key={c._id} className="border-t">
               <td className="p-3 text-gray-500">{index + 1}</td>
               <td className="p-3">{new Date(c.date).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</td>
@@ -269,36 +319,37 @@ export default function ChandaPage() {
 
       {/* Mobile: cards */}
       <div className="md:hidden flex flex-col gap-3">
-        {chandas.map((c, index) => (
-          <div key={c._id} className="bg-white rounded-lg shadow-sm p-4">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <p className="text-xs text-gray-400">#{index + 1}</p>
-                <p className="font-medium text-gray-800">{c.devoteeName}</p>
-                <p className="text-xs text-gray-500">{c.devoteePhone}</p>
-              </div>
-              <p className="font-bold text-orange-700">₹{c.amount.toLocaleString('en-IN')}</p>
-            </div>
-            <div className="flex justify-between text-sm text-gray-600 mb-3">
-              {/* <span>{c.chandaType.value === 'Other' ? c.chandaType.customValue : c.chandaType.value}</span> */}
-              <span>{c.paymentMode.value === 'Other' ? c.paymentMode.customValue : c.paymentMode.value}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-400">
-                {new Date(c.date).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
-              </span>
-              <div className="flex gap-3">
-                <button onClick={() => handleEdit(c)} className="text-blue-600" title="Edit">
-                  <Pencil size={16} />
-                </button>
-                <button onClick={() => handleDelete(c._id)} className="text-red-600" title="Delete">
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
+  {sortedChandas.map((c, index) => (
+    <FadeInOnScroll key={c._id}>
+      <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className="flex justify-between items-start mb-2">
+          <div>
+            <p className="text-xs text-gray-400">#{index + 1}</p>
+            <p className="font-medium text-gray-800">{c.devoteeName}</p>
+            <p className="text-xs text-gray-500">{c.devoteePhone}</p>
           </div>
-        ))}
+          <p className="font-bold text-orange-700">₹{c.amount.toLocaleString('en-IN')}</p>
+        </div>
+        <div className="flex justify-between text-sm text-gray-600 mb-3">
+          <span>{c.paymentMode.value === 'Other' ? c.paymentMode.customValue : c.paymentMode.value}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-xs text-gray-400">
+            {new Date(c.date).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
+          </span>
+          <div className="flex gap-3">
+            <button onClick={() => handleEdit(c)} className="text-blue-600" title="Edit">
+              <Pencil size={16} />
+            </button>
+            <button onClick={() => handleDelete(c._id)} className="text-red-600" title="Delete">
+              <Trash2 size={16} />
+            </button>
+          </div>
+        </div>
       </div>
+    </FadeInOnScroll>
+  ))}
+</div>
     </div>
   );
 }

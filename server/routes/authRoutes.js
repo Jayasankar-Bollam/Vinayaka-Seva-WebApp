@@ -14,4 +14,5 @@ router.post('/login', login);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 router.put('/update-logo', requireAuth, upload.single('logo'), updateLogo);
+router.put('/update-background', requireAuth, upload.single('background'), updateBackground);
 module.exports = router;

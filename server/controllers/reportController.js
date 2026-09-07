@@ -40,7 +40,7 @@ async function chandaReport(req, res) {
     const rows = chandas.map((c) => [
       new Date(c.date).toLocaleDateString('en-IN'),
       c.devoteeName,
-      // displayValue(c.chandaType),
+      displayValue(c.chandaType),
       displayValue(c.paymentMode),
       `Rs. ${c.amount.toLocaleString('en-IN')}`,
     ]);

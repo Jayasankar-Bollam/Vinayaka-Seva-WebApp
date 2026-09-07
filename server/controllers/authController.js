@@ -70,6 +70,24 @@ async function updateLogo(req, res) {
   }
 }
 
+async function updateBackground(req, res) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const organization = await Organization.findByIdAndUpdate(
+      req.user.organization,
+      { backgroundUrl: `/uploads/${req.file.filename}` },
+      { new: true }
+    );
+
+    res.json({ message: 'Background updated', organization });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update background', error: err.message });
+  }
+}
+
 
 async function forgotPassword(req, res) {
   try {
@@ -167,4 +185,4 @@ async function login(req, res) {
   }
 }
 
-module.exports = { register, login, forgotPassword, resetPassword, updateLogo };
+module.exports = { register, login, forgotPassword, resetPassword, updateLogo, updateBackground };

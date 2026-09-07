@@ -44,6 +44,9 @@ router.get('/:slug/summary', async (req, res) => {
       totalChanda,
       totalExpense,
       balance: totalChanda - totalExpense,
+      VideoPage,
+      DailyEventPage,
+      
     });
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch summary', error: err.message });

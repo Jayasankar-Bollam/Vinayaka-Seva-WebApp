@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import api from '../api/axios';
 import SelectWithOther from '../components/SelectWithOther';
 import { Pencil, Trash2 } from 'lucide-react';
+import FadeInOnScroll from '../components/FadeInOnScroll';
 
 const CATEGORIES = ['Festival', 'Daily Ritual', 'Special Event'];
 
@@ -194,6 +195,7 @@ useEffect(() => {
       {/* Mobile: cards */}
       <div className="md:hidden flex flex-col gap-3">
         {videos.map((v, index) => (
+           <FadeInOnScroll key={v._id}>
           <div key={v._id} className="bg-white rounded-lg shadow-sm p-4">
             <div className="flex justify-between items-start mb-2">
               <div>
@@ -219,6 +221,7 @@ useEffect(() => {
               </div>
             </div>
           </div>
+            </FadeInOnScroll>
         ))}
       </div>
     </div>
