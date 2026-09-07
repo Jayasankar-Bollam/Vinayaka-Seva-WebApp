@@ -133,7 +133,7 @@ vinaya-seva/
 
 ## Known Limitations / Possible Next Steps
 
-- Image URLs (logos) are currently hardcoded to `http://localhost:5000` on the frontend — should become an environment variable before deployment
+- Image URLs (logos) are currently hardcoded to `http://localhost:5000`--> 'import.meta.env.VITE_API_URL' on the frontend — should become an environment variable before deployment
 - No manual "backdate" option currently in the entry forms (all new records save under the current date) — a date picker can be reintroduced if historical data entry is needed
 - No staff-invite flow yet — the `User` model supports a `staff` role, but only the registering admin can currently log in per organization
 - A per-devotee QR code (linking to one specific record rather than the temple's overall public page) was discussed as a possible future feature
