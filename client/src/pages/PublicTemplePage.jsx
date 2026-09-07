@@ -101,7 +101,7 @@ export default function PublicTemplePage() {
                 href={v.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition"
+                className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-transform duration-200 hover:scale-105 active:scale-95"
               >
                 <p className="font-medium text-gray-800">{v.title}</p>
                 <p className="text-sm text-gray-500">

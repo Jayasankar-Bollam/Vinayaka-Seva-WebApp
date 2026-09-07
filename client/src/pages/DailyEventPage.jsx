@@ -98,13 +98,13 @@ useEffect(() => {
     try {
       const now = new Date();
       const res = await api.get('/reports/daily-events', {
-        params: { year: now.getFullYear(), month: now.getMonth() + 1 },
+        params: { year: now.getFullYear() },
         responseType: 'blob',
       });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `events-report-${now.getFullYear()}-${now.getMonth() + 1}.pdf`);
+      link.setAttribute('download', `events-report-${now.getFullYear()}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -230,7 +230,7 @@ useEffect(() => {
       <div className="md:hidden flex flex-col gap-3">
         {events.map((ev, index) => (
           <FadeInOnScroll key={ev._id}>
-          <div key={ev._id} className="bg-white rounded-lg shadow-sm p-4">
+          <div key={ev._id} className="bg-white rounded-lg shadow-sm p-4 transition-transform duration-200 hover:scale-105 active:scale-95">
             <div className="flex justify-between items-start mb-2">
               <div>
                 <p className="text-xs text-gray-400">#{index + 1}</p>

@@ -1,7 +1,7 @@
 // server/routes/authRoutes.js
 const express = require('express');
 const router = express.Router();
-const { register,login, forgotPassword, resetPassword, updateLogo } = require('../controllers/authController');
+const { register,login, forgotPassword, resetPassword, updateLogo,updateBackground } = require('../controllers/authController');
 const upload = require('../middleware/upload');
 const { requireAuth } = require('../middleware/auth');
 

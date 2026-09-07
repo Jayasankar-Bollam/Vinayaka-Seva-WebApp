@@ -321,7 +321,7 @@ return(
       <div className="md:hidden flex flex-col gap-3">
   {sortedChandas.map((c, index) => (
     <FadeInOnScroll key={c._id}>
-      <div className="bg-white rounded-lg shadow-sm p-4">
+      <div className="bg-white rounded-lg shadow-sm p-4 transition-transform duration-200 hover:scale-105 active:scale-95 ">
         <div className="flex justify-between items-start mb-2">
           <div>
             <p className="text-xs text-gray-400">#{index + 1}</p>
