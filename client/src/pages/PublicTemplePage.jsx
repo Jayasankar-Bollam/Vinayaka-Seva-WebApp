@@ -51,7 +51,7 @@ export default function PublicTemplePage() {
       <div className="bg-orange-700 text-white py-6 md:py-8 px-4 text-center">
         {org.logoUrl && (
           <img
-            src={`${import.meta.env.VITE_API_URL}${organization.logoUrl}`}
+            src={`${import.meta.env.VITE_API_URL}${org.logoUrl}`}
             alt="Temple logo"
             className="h-20 w-20 rounded-full mx-auto mb-3 object-cover border-4 border-white"
           />
