@@ -1,5 +1,6 @@
 // server/controllers/reportController.js
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
 const Organization = require('../models/Organization');
 const Chanda = require('../models/Chanda');
 const Expense = require('../models/Expense');
@@ -9,15 +10,16 @@ const { displayValue } = require('../utils/otherField');
 
 async function renderPdf(html) {
   const browser = await puppeteer.launch({
-  args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-});
+    args: chromium.args,
+    executablePath: await chromium.executablePath(),
+    headless: chromium.headless,
+  });
   const page = await browser.newPage();
   await page.setContent(html, { waitUntil: 'networkidle0' });
   const buffer = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '20px', bottom: '20px' } });
   await browser.close();
   return buffer;
 }
-
 function sendPdf(res, buffer, filename) {
   res.set({
     'Content-Type': 'application/pdf',
