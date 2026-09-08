@@ -5,7 +5,7 @@ import api from '../api/axios';
 
 const CURRENT_YEAR = new Date().getFullYear();
 const YEAR_OPTIONS = [];
-for (let y = CURRENT_YEAR + 1; y >= CURRENT_YEAR - 5; y--) {
+for (let y = CURRENT_YEAR + 10; y >= CURRENT_YEAR - 2; y--) {
   YEAR_OPTIONS.push(y);
 }
 
