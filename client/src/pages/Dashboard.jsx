@@ -75,7 +75,7 @@ export default function Dashboard() {
           <label className="relative cursor-pointer group">
             {organization.logoUrl ? (
               <img
-               src={`${import.meta.env.VITE_SERVER_URL}${organization.logoUrl}`}
+               src={`${import.meta.env.VITE_API_URL}${organization.logoUrl}`}
                 alt="Temple logo"
                 className="h-12 w-12 rounded-full object-cover border"
               />

@@ -23,6 +23,7 @@ const EMPTY_FORM = {
   date: new Date().toISOString().split('T')[0],
   chandaType: { value: '' },
   paymentMode: { value: '' },
+  notes:'',
 };
 
 export default function ExpensePage() {

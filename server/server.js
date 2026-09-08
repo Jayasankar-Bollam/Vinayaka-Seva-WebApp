@@ -7,19 +7,20 @@ const app = express();
 
 const cors = require('cors');
 const allowedOrigins = [
-  'http://localhost:5173',
-  'https://vinayaka-seva-web-app.vercel.app'
+  process.env.CLIENT_URL,       // your deployed Vercel URL
+  'http://localhost:5173',      // your local dev frontend
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
+    // allow requests with no origin (like Postman, or server-to-server calls)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true
+  credentials: true,
 }));
 
 app.get('/api/health', (req, res) => {
