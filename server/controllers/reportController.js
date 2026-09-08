@@ -1,6 +1,7 @@
 // server/controllers/reportController.js
 const puppeteer = require('puppeteer-core');
-const chromium = require('@sparticuz/chromium');
+const chromium = require('@sparticuz/chromium').default || require('@sparticuz/chromium');
+
 const Organization = require('../models/Organization');
 const Chanda = require('../models/Chanda');
 const Expense = require('../models/Expense');
