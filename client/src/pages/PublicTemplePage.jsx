@@ -3,32 +3,60 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api/axios';
 
+const CURRENT_YEAR = new Date().getFullYear();
+const YEAR_OPTIONS = [];
+for (let y = CURRENT_YEAR + 1; y >= CURRENT_YEAR - 5; y--) {
+  YEAR_OPTIONS.push(y);
+}
+
+const TABS = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'videos', label: 'Videos' },
+  { key: 'events', label: 'Daily Events' },
+];
+
 export default function PublicTemplePage() {
   const { slug } = useParams();
   const [org, setOrg] = useState(null);
   const [summary, setSummary] = useState(null);
   const [videos, setVideos] = useState([]);
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [events, setEvents] = useState([]);
+  const [year, setYear] = useState(CURRENT_YEAR);
+  const [activeTab, setActiveTab] = useState('overview');
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchOrg() {
       try {
-        const orgRes = await api.get(`/public/${slug}`);
-        setOrg(orgRes.data);
-
-        const [summaryRes, videosRes] = await Promise.all([
-          api.get(`/public/${slug}/summary`, { params: { year } }),
-          api.get(`/public/${slug}/videos`, { params: { year } }),
-        ]);
-        setSummary(summaryRes.data);
-        setVideos(videosRes.data);
+        const res = await api.get(`/public/${slug}`);
+        setOrg(res.data);
       } catch (err) {
         setNotFound(true);
       }
     }
-    fetchData();
-  }, [slug, year]);
+    fetchOrg();
+  }, [slug]);
+
+  useEffect(() => {
+    if (!org) return;
+    async function fetchTabData() {
+      try {
+        if (activeTab === 'overview') {
+          const res = await api.get(`/public/${slug}/summary`, { params: { year } });
+          setSummary(res.data);
+        } else if (activeTab === 'videos') {
+          const res = await api.get(`/public/${slug}/videos`, { params: { year } });
+          setVideos(res.data);
+        } else if (activeTab === 'events') {
+          const res = await api.get(`/public/${slug}/daily-events`, { params: { year } });
+          setEvents(res.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch tab data', err);
+      }
+    }
+    fetchTabData();
+  }, [slug, org, year, activeTab]);
 
   if (notFound) {
     return (
@@ -60,6 +88,22 @@ export default function PublicTemplePage() {
         <p className="text-orange-100 mt-1">Transparency Report</p>
       </div>
 
+      <div className="bg-white border-b flex gap-1 px-4 overflow-x-auto">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap ${
+              activeTab === tab.key
+                ? 'border-orange-700 text-orange-700'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       <div className="max-w-3xl mx-auto p-6">
         <div className="flex justify-end mb-4">
           <select
@@ -67,14 +111,14 @@ export default function PublicTemplePage() {
             onChange={(e) => setYear(Number(e.target.value))}
             className="border rounded-md px-3 py-2 text-sm"
           >
-            {[year, year - 1, year - 2].map((y) => (
+            {YEAR_OPTIONS.map((y) => (
               <option key={y} value={y}>{y}</option>
             ))}
           </select>
         </div>
 
-        {summary && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        {activeTab === 'overview' && summary && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-white p-4 rounded-lg shadow-sm text-center">
               <p className="text-gray-500 text-sm">Total Chanda</p>
               <p className="text-2xl font-bold text-green-700">₹{summary.totalChanda.toLocaleString('en-IN')}</p>
@@ -90,26 +134,54 @@ export default function PublicTemplePage() {
           </div>
         )}
 
-        <h2 className="text-lg font-bold text-gray-800 mb-3">Videos — {year}</h2>
-        {videos.length === 0 ? (
-          <p className="text-gray-500 text-sm">No videos for this year yet.</p>
-        ) : (
-          <div className="grid gap-3">
-            {videos.map((v) => (
-              <a
-                key={v._id}
-                href={v.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-transform duration-200 hover:scale-105 active:scale-95"
-              >
-                <p className="font-medium text-gray-800">{v.title}</p>
-                <p className="text-sm text-gray-500">
-                  {v.category.value === 'Other' ? v.category.customValue : v.category.value}
-                </p>
-              </a>
-            ))}
-          </div>
+        {activeTab === 'videos' && (
+          videos.length === 0 ? (
+            <p className="text-gray-500 text-sm">No videos for this year yet.</p>
+          ) : (
+            <div className="grid gap-3">
+              {videos.map((v) => (
+                <a
+                  key={v._id}
+                  href={v.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-transform duration-200 hover:scale-105 active:scale-95"
+                >
+                  <p className="font-medium text-gray-800">{v.title}</p>
+                  <p className="text-sm text-gray-500">
+                    {v.category.value === 'Other' ? v.category.customValue : v.category.value}
+                  </p>
+                </a>
+              ))}
+            </div>
+          )
+        )}
+
+        {activeTab === 'events' && (
+          events.length === 0 ? (
+            <p className="text-gray-500 text-sm">No events for this year yet.</p>
+          ) : (
+            <div className="grid gap-3">
+              {events.map((ev) => (
+                <div key={ev._id} className="bg-white p-4 rounded-lg shadow-sm">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium text-gray-800">
+                        {ev.eventType.value === 'Other' ? ev.eventType.customValue : ev.eventType.value}
+                      </p>
+                      {ev.description && <p className="text-sm text-gray-500">{ev.description}</p>}
+                    </div>
+                    {ev.budget > 0 && (
+                      <p className="font-bold text-orange-700">₹{ev.budget.toLocaleString('en-IN')}</p>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    {new Date(ev.date).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )
         )}
       </div>
     </div>
