@@ -31,7 +31,7 @@ async function register(req, res) {
   const organization = await Organization.create({
   name: orgName,
   slug,
-  logoUrl: req.file ? `/uploads/${req.file.filename}` : undefined,
+  logoUrl: req.file ? req.file.path : undefined,
 });
 
     const user = await User.create({
@@ -60,7 +60,7 @@ async function updateLogo(req, res) {
 
     const organization = await Organization.findByIdAndUpdate(
       req.user.organization,
-      { logoUrl: `/uploads/${req.file.filename}` },
+     { logoUrl: req.file.path },
       { new: true }
     );
 
@@ -78,7 +78,7 @@ async function updateBackground(req, res) {
 
     const organization = await Organization.findByIdAndUpdate(
       req.user.organization,
-      { backgroundUrl: `/uploads/${req.file.filename}` },
+      { backgroundUrl: req.file.path },
       { new: true }
     );
 

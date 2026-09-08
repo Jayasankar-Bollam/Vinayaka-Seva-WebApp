@@ -57,7 +57,7 @@ app.use('/api/daily-events', dailyEventRoutes);
 const reportRoutes = require('./routes/reportRoutes');
 app.use('/api/reports', reportRoutes);
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Error handler — must be defined AFTER all routes, and must take exactly 4 parameters
 app.use((err, req, res, next) => {
