@@ -11,7 +11,7 @@ const { displayValue } = require('../utils/otherField');
 // GET /api/public/:slug -> basic temple info for the public page header
 router.get('/:slug', async (req, res) => {
   try {
-    const org = await Organization.findOne({ slug: req.params.slug }).select('name slug logoUrl');
+    const org = await Organization.findOne({ slug: req.params.slug }).select('name slug logoUrl backgroundUrl');
     if (!org) {
       return res.status(404).json({ message: 'Temple not found' });
     }
@@ -22,6 +22,8 @@ router.get('/:slug', async (req, res) => {
 });
 
 // GET /api/public/:slug/summary?year=2026
+
+
 router.get('/:slug/summary', async (req, res) => {
   try {
     const org = await Organization.findOne({ slug: req.params.slug });
@@ -29,33 +31,36 @@ router.get('/:slug/summary', async (req, res) => {
       return res.status(404).json({ message: 'Temple not found' });
     }
 
-    const year = Number(req.query.year) || new Date().getFullYear();
-    const start = new Date(year, 0, 1);
-    const end = new Date(year + 1, 0, 1);
+    const filter = { organization: org._id };
+    if (req.query.year) {
+      const year = Number(req.query.year);
+      filter.date = { $gte: new Date(year, 0, 1), $lt: new Date(year + 1, 0, 1) };
+    }
 
-    const [chandas, expenses] = await Promise.all([
-      Chanda.find({ organization: org._id, date: { $gte: start, $lt: end } }),
-      Expense.find({ organization: org._id, date: { $gte: start, $lt: end } }),
+    const [chandas, expenses, events] = await Promise.all([
+      Chanda.find(filter),
+      Expense.find(filter),
+      DailyEvent.find(filter),
     ]);
 
     const totalChanda = chandas.reduce((sum, c) => sum + c.amount, 0);
     const totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const totalEventBudget = events.reduce((sum, ev) => sum + (ev.budget || 0), 0);
 
     res.json({
-      year,
       totalChanda,
       totalExpense,
-      balance: totalChanda - totalExpense,
+      totalEventBudget,
+      balance: totalChanda - totalExpense - totalEventBudget,
     });
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch summary', error: err.message });
   }
 });
-
 // GET /api/public/:slug/videos?year=2026
 router.get('/:slug/videos', async (req, res) => {
   try {
-    const org = await Organization.findOne({ slug: req.params.slug });
+    const org = await Organization.findOne({ slug: req.params.slug }).select('name slug logoUrl backgroundUrl');
     if (!org) {
       return res.status(404).json({ message: 'Temple not found' });
     }
