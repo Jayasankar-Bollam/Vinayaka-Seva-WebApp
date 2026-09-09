@@ -77,7 +77,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-orange-700 text-white px-6 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">Vinayka Management Dashboard</h1>
+        <h1 className="text-xl font-bold">Vinayaka Management Dashboard</h1>
         <div className="flex items-center gap-4">
           <span>{user.name}</span>
           <button onClick={handleLogout} className="bg-orange-900 px-3 py-1 rounded-md text-sm">
