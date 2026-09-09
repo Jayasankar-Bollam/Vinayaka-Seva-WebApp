@@ -408,7 +408,14 @@ async function forgotPassword(req, res) {
     const resetUrl =
       `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
-    await sendEmail({
+    // Respond immediately to the user
+    res.json({
+      message:
+        'If that email exists, a reset link has been sent.',
+    });
+
+    // Send email in the background
+    sendEmail({
       to: user.email,
       subject: 'Reset Your Password — Vinayaka Seva',
       html: `
@@ -423,16 +430,15 @@ async function forgotPassword(req, res) {
           If you didn't request this, ignore this email.
         </p>
       `,
+    }).catch((err) => {
+      console.error('Password reset email failed:', err);
     });
 
-    res.json({
-      message:
-        'If that email exists, a reset link has been sent.',
-    });
   } catch (err) {
+    console.error('Forgot password error:', err);
+
     res.status(500).json({
       message: 'Failed to process request',
-      error: err.message,
     });
   }
 }
@@ -464,6 +470,7 @@ async function resetPassword(req, res) {
       message:
         'Password reset successful. You can now log in.',
     });
+
   } catch (err) {
     res.status(500).json({
       message: 'Failed to reset password',
@@ -471,8 +478,6 @@ async function resetPassword(req, res) {
     });
   }
 }
-
-
 async function login(req, res) {
   try {
     const { email, password } = req.body;
