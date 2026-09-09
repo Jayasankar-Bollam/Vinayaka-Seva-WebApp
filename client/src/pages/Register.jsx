@@ -160,8 +160,8 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Maximum logo size: 2 MB
-  const MAX_LOGO_SIZE = 2 * 1024 * 1024;
+  // Maximum logo size: 5 MB
+  const MAX_LOGO_SIZE = 5 * 1024 * 1024;
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -220,7 +220,7 @@ export default function Register() {
 
       setErrors({
         ...errors,
-        logo: 'Logo size must not exceed 2 MB.',
+        logo: 'Logo size must not exceed 5 MB.',
         general: '',
       });
 
@@ -459,7 +459,7 @@ export default function Register() {
         />
 
         <p className="text-gray-500 text-xs mb-1">
-          PNG, JPEG or WebP. Maximum size: 2 MB.
+          PNG, JPEG or WebP. Maximum size: 5 MB.
         </p>
 
         {errors.logo && (
