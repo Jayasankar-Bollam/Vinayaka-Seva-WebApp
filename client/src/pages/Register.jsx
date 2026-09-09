@@ -40,9 +40,14 @@ export default function Register() {
       });
 
       navigate('/login');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
-    } finally {
+   } catch (err) {
+  const details = JSON.stringify({
+    message: err.response?.data?.message,
+    status: err.response?.status,
+    fullError: err.message,
+  });
+  setError(details);
+} finally {
       setLoading(false);
     }
   }
