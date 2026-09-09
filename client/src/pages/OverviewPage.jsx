@@ -20,6 +20,19 @@ export default function OverviewPage() {
   );
   const [uploadingBg, setUploadingBg] = useState(false);
 
+   useEffect(() => {
+    async function refreshOrganization() {
+      try {
+        const res = await api.get('/auth/me');
+        setOrganization(res.data.organization);
+        localStorage.setItem('organization', JSON.stringify(res.data.organization));
+      } catch (err) {
+        // keep whatever localStorage had if this fails
+      }
+    }
+    refreshOrganization();
+  }, []);
+
   useEffect(() => {
     async function fetchOverview() {
       const res = await api.get('/overview', { params: { year } });
@@ -59,10 +72,9 @@ export default function OverviewPage() {
     <div
       className="relative min-h-screen bg-cover bg-center bg-fixed bg-no-repeat"
       style={{
-        backgroundImage: organization.backgroundUrl
-          ?`url({organization.backgroundUrl})`
-
-          : 'linear-gradient(to bottom, #fff7ed, #ffffff)',
+       backgroundImage: organization.backgroundUrl
+  ? `url(${organization.backgroundUrl})`
+  : 'linear-gradient(to bottom, #fff7ed, #ffffff)',
           backgroundSize: organization.backgroundUrl ? '400px auto' : 'cover',
           backgroundColor: '#1a1a1a',
       }}

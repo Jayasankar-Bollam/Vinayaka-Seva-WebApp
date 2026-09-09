@@ -1,5 +1,5 @@
 // client/src/pages/Dashboard.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
@@ -21,9 +21,26 @@ const TABS = [
 export default function Dashboard() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const organization = JSON.parse(localStorage.getItem('organization') || '{}');
+  const [organization, setOrganization] = useState(
+    JSON.parse(localStorage.getItem('organization') || '{}')
+  );
   const [activeTab, setActiveTab] = useState('overview');
   const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  // Always fetch the true, current organization data on mount —
+  // localStorage is only used as an instant-display fallback while this loads.
+  useEffect(() => {
+    async function refreshOrganization() {
+      try {
+        const res = await api.get('/auth/me');
+        setOrganization(res.data.organization);
+        localStorage.setItem('organization', JSON.stringify(res.data.organization));
+      } catch (err) {
+        // if this fails, we just keep showing whatever localStorage had
+      }
+    }
+    refreshOrganization();
+  }, []);
 
   const publicUrl = `${window.location.origin}/temple/${organization.slug}`;
 
@@ -41,8 +58,8 @@ export default function Dashboard() {
       });
       const updatedOrg = { ...organization, logoUrl: res.data.organization.logoUrl };
       localStorage.setItem('organization', JSON.stringify(updatedOrg));
+      setOrganization(updatedOrg);
       toast.success('Logo updated!');
-      window.location.reload();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update logo');
     } finally {
@@ -60,7 +77,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-orange-700 text-white px-6 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">Vinayaka Management Dashboard</h1>
+        <h1 className="text-xl font-bold">Vinaya Seva Dashboard</h1>
         <div className="flex items-center gap-4">
           <span>{user.name}</span>
           <button onClick={handleLogout} className="bg-orange-900 px-3 py-1 rounded-md text-sm">
@@ -69,13 +86,12 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      {/* Welcome + QR section */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 px-6 py-4 text-center md:text-left">
         <div className="flex items-center gap-3 justify-center md:justify-start">
           <label className="relative cursor-pointer group">
             {organization.logoUrl ? (
               <img
-               src={organization.logoUrl}
+                src={organization.logoUrl}
                 alt="Temple logo"
                 className="h-12 w-12 rounded-full object-cover border"
               />
@@ -119,7 +135,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Tab bar */}
       <div className="bg-white border-b flex gap-1 px-6 overflow-x-auto">
         {TABS.map((tab) => (
           <button
@@ -136,7 +151,6 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Active tab content */}
       {activeTab === 'overview' && <OverviewPage />}
       {activeTab === 'chanda' && <ChandaPage />}
       {activeTab === 'expense' && <ExpensePage />}

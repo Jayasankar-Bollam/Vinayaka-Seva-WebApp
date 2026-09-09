@@ -69,7 +69,25 @@ async function updateLogo(req, res) {
     res.status(500).json({ message: 'Failed to update logo', error: err.message });
   }
 }
-
+async function getMe(req, res) {
+  try {
+    const organization = await Organization.findById(req.user.organization);
+    if (!organization) {
+      return res.status(404).json({ message: 'Organization not found' });
+    }
+    res.json({
+      organization: {
+        id: organization._id,
+        name: organization.name,
+        slug: organization.slug,
+        logoUrl: organization.logoUrl,
+        backgroundUrl: organization.backgroundUrl,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch profile', error: err.message });
+  }
+}
 async function updateBackground(req, res) {
   try {
     if (!req.file) {
@@ -87,6 +105,7 @@ async function updateBackground(req, res) {
     res.status(500).json({ message: 'Failed to update background', error: err.message });
   }
 }
+  
 
 
 async function forgotPassword(req, res) {
@@ -185,4 +204,4 @@ async function login(req, res) {
   }
 }
 
-module.exports = { register, login, forgotPassword, resetPassword, updateLogo, updateBackground };
+module.exports = { register, login, forgotPassword, resetPassword, updateLogo, updateBackground,getMe };
