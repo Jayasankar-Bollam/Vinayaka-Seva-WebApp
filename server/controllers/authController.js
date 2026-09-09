@@ -210,6 +210,7 @@
 
 
 // server/controllers/authController.js
+
 const User = require('../models/User');
 const Organization = require('../models/Organization');
 const slugify = require('../utils/slugify');
@@ -217,6 +218,10 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
 
+
+// =====================================================
+// REGISTER
+// =====================================================
 
 async function register(req, res) {
   try {
@@ -229,7 +234,13 @@ async function register(req, res) {
       });
     }
 
-    // Password validation
+    // Password requirements:
+    // At least 8 characters
+    // At least one uppercase
+    // At least one lowercase
+    // At least one number
+    // At least one special character
+
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
 
@@ -241,6 +252,7 @@ async function register(req, res) {
       });
     }
 
+    // Check if email already exists
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -251,8 +263,11 @@ async function register(req, res) {
     }
 
     // Generate a unique slug
-    // if "sri-venkateswara-trust" exists,
-    // try "-1", "-2", etc.
+    // Example:
+    // sri-venkateswara-trust
+    // sri-venkateswara-trust-1
+    // sri-venkateswara-trust-2
+
     let baseSlug = slugify(orgName);
     let slug = baseSlug;
     let suffix = 1;
@@ -261,33 +276,39 @@ async function register(req, res) {
       slug = `${baseSlug}-${suffix++}`;
     }
 
+    // Create organization
     const organization = await Organization.create({
       name: orgName,
       slug,
       logoUrl: req.file ? req.file.path : undefined,
     });
 
+    // Create user
     const user = await User.create({
       name,
       email,
-      password, // gets hashed automatically by pre-save hook
+      password, // Password gets hashed by User model pre-save hook
       organization: organization._id,
       role: 'org-admin',
     });
 
+    // Successful registration
     res.status(201).json({
       message: 'Registration successful',
+
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
       },
+
       organization: {
         id: organization._id,
         name: organization.name,
         slug: organization.slug,
       },
     });
+
   } catch (err) {
     console.error('Registration error:', err);
 
@@ -299,6 +320,10 @@ async function register(req, res) {
 }
 
 
+// =====================================================
+// UPDATE LOGO
+// =====================================================
+
 async function updateLogo(req, res) {
   try {
     if (!req.file) {
@@ -309,15 +334,22 @@ async function updateLogo(req, res) {
 
     const organization = await Organization.findByIdAndUpdate(
       req.user.organization,
-      { logoUrl: req.file.path },
-      { new: true }
+      {
+        logoUrl: req.file.path,
+      },
+      {
+        new: true,
+      }
     );
 
     res.json({
       message: 'Logo updated',
       organization,
     });
+
   } catch (err) {
+    console.error('Update logo error:', err);
+
     res.status(500).json({
       message: 'Failed to update logo',
       error: err.message,
@@ -325,6 +357,10 @@ async function updateLogo(req, res) {
   }
 }
 
+
+// =====================================================
+// GET CURRENT USER / ORGANIZATION
+// =====================================================
 
 async function getMe(req, res) {
   try {
@@ -347,7 +383,10 @@ async function getMe(req, res) {
         backgroundUrl: organization.backgroundUrl,
       },
     });
+
   } catch (err) {
+    console.error('Get profile error:', err);
+
     res.status(500).json({
       message: 'Failed to fetch profile',
       error: err.message,
@@ -355,6 +394,10 @@ async function getMe(req, res) {
   }
 }
 
+
+// =====================================================
+// UPDATE BACKGROUND
+// =====================================================
 
 async function updateBackground(req, res) {
   try {
@@ -366,15 +409,22 @@ async function updateBackground(req, res) {
 
     const organization = await Organization.findByIdAndUpdate(
       req.user.organization,
-      { backgroundUrl: req.file.path },
-      { new: true }
+      {
+        backgroundUrl: req.file.path,
+      },
+      {
+        new: true,
+      }
     );
 
     res.json({
       message: 'Background updated',
       organization,
     });
+
   } catch (err) {
+    console.error('Update background error:', err);
+
     res.status(500).json({
       message: 'Failed to update background',
       error: err.message,
@@ -383,13 +433,17 @@ async function updateBackground(req, res) {
 }
 
 
+// =====================================================
+// FORGOT PASSWORD
+// =====================================================
+
 async function forgotPassword(req, res) {
   try {
     const { email } = req.body;
 
     const user = await User.findOne({ email });
 
-    // Always respond the same way, whether or not the user exists
+    // Don't reveal whether email exists
     if (!user) {
       return res.json({
         message:
@@ -397,9 +451,11 @@ async function forgotPassword(req, res) {
       });
     }
 
+    // Generate secure reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
 
     user.resetPasswordToken = resetToken;
+
     user.resetPasswordExpires =
       Date.now() + 15 * 60 * 1000;
 
@@ -408,59 +464,85 @@ async function forgotPassword(req, res) {
     const resetUrl =
       `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
-    // Respond immediately to the user
-    res.json({
-      message:
-        'If that email exists, a reset link has been sent.',
-    });
-
-    // Send email in the background
-    sendEmail({
+    // Wait for email to actually be sent
+    await sendEmail({
       to: user.email,
-      subject: 'Reset Your Password — Vinayaka Seva',
+
+      subject:
+        'Reset Your Password — Vinayaka Seva',
+
       html: `
         <p>You requested a password reset.</p>
+
         <p>
           <a href="${resetUrl}">
             Click here to reset your password
           </a>
         </p>
+
         <p>
           This link expires in 15 minutes.
           If you didn't request this, ignore this email.
         </p>
       `,
-    }).catch((err) => {
-      console.error('Password reset email failed:', err);
+    });
+
+    // Only show success after email sending succeeds
+    res.json({
+      message:
+        'If that email exists, a reset link has been sent.',
     });
 
   } catch (err) {
     console.error('Forgot password error:', err);
 
     res.status(500).json({
-      message: 'Failed to process request',
+      field: 'general',
+      message: 'Failed to send password reset email',
     });
   }
 }
 
+
+// =====================================================
+// RESET PASSWORD
+// =====================================================
 
 async function resetPassword(req, res) {
   try {
     const { token } = req.params;
     const { password } = req.body;
 
+    // Password validation
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
+
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        field: 'password',
+        message:
+          'Password must be at least 8 characters and contain uppercase, lowercase, number and special character.',
+      });
+    }
+
     const user = await User.findOne({
       resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() },
+      resetPasswordExpires: {
+        $gt: Date.now(),
+      },
     });
 
     if (!user) {
       return res.status(400).json({
+        field: 'general',
         message: 'Invalid or expired reset link',
       });
     }
 
+    // Update password
+    // User model pre-save hook hashes it automatically
     user.password = password;
+
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
 
@@ -472,12 +554,20 @@ async function resetPassword(req, res) {
     });
 
   } catch (err) {
+    console.error('Reset password error:', err);
+
     res.status(500).json({
+      field: 'general',
       message: 'Failed to reset password',
-      error: err.message,
     });
   }
 }
+
+
+// =====================================================
+// LOGIN
+// =====================================================
+
 async function login(req, res) {
   try {
     const { email, password } = req.body;
@@ -508,18 +598,24 @@ async function login(req, res) {
         organization: user.organization,
         role: user.role,
       },
+
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+
+      {
+        expiresIn: '7d',
+      }
     );
 
     res.json({
       token,
+
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
       },
+
       organization: {
         id: organization._id,
         name: organization.name,
@@ -527,7 +623,10 @@ async function login(req, res) {
         logoUrl: organization.logoUrl,
       },
     });
+
   } catch (err) {
+    console.error('Login error:', err);
+
     res.status(500).json({
       message: 'Login failed',
       error: err.message,
@@ -535,6 +634,10 @@ async function login(req, res) {
   }
 }
 
+
+// =====================================================
+// EXPORTS
+// =====================================================
 
 module.exports = {
   register,
