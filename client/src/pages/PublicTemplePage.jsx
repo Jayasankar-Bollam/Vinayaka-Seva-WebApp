@@ -25,7 +25,7 @@ export default function PublicTemplePage() {
   const [summary, setSummary] = useState(null);
   const [videos, setVideos] = useState([]);
   const [events, setEvents] = useState([]);
-  const [year, setYear] = useState("");
+  const [year, setYear] = useState(CURRENT_YEAR);
   const [activeTab, setActiveTab] = useState("overview");
   const [notFound, setNotFound] = useState(false);
 
