@@ -13,7 +13,7 @@ const CATEGORIES = [
   "Prasadam",
   "Maintenance",
 ];
-const PURPOSES = ["Oil", "Camphor", "Flowers", "Decoration", "Electricity"];
+// const PURPOSES = ["Oil", "Camphor", "Flowers", "Decoration", "Electricity"];
 const PAYMENT_MODES = ["Cash", "PhonePe", "GPay", "Bank Transfer"];
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -26,7 +26,7 @@ const EMPTY_FORM = {
   amount: "",
   date: new Date().toISOString().split("T")[0],
   category: { value: "" },
-  purpose: { value: "" },
+  // purpose: { value: "" },
   paymentMode: { value: "" },
   notes: "",
 };
@@ -67,7 +67,7 @@ export default function ExpensePage() {
       amount: expense.amount,
       date: new Date(expense.date).toISOString().split("T")[0],
       category: expense.category,
-      purpose: expense.purpose,
+      // purpose: expense.purpose,
       paymentMode: expense.paymentMode,
       notes: expense.notes || "",
     });
@@ -105,7 +105,7 @@ export default function ExpensePage() {
     formData.append("amount", form.amount);
     formData.append("date", form.date);
     formData.append("category", JSON.stringify(form.category));
-    formData.append("purpose", JSON.stringify(form.purpose));
+    // formData.append("purpose", JSON.stringify(form.purpose));
     formData.append("paymentMode", JSON.stringify(form.paymentMode));
     formData.append("notes", form.notes);
     if (receiptFile) {
@@ -288,7 +288,7 @@ export default function ExpensePage() {
             <th className="text-left p-3">#</th>
             <th className="text-left p-3">Date</th>
             <th className="text-left p-3">Category</th>
-            <th className="text-left p-3">Purpose</th>
+            {/* <th className="text-left p-3">Purpose</th> */}
             <th className="text-left p-3">Payment</th>
             <th className="text-left p-3">Amount</th>
             <th className="text-left p-3">Actions</th>
@@ -366,11 +366,11 @@ export default function ExpensePage() {
                       ? e.category.customValue
                       : e.category.value}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  {/* <p className="text-xs text-gray-500">
                     {e.purpose.value === "Other"
                       ? e.purpose.customValue
                       : e.purpose.value}
-                  </p>
+                  </p> */}
                 </div>
                 <p className="font-bold text-orange-700">
                   ₹{e.amount.toLocaleString("en-IN")}

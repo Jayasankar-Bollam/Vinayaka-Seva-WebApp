@@ -9,7 +9,7 @@ async function createExpense(req, res) {
       amount: req.body.amount,
       date: req.body.date,
       category: JSON.parse(req.body.category),
-      purpose: JSON.parse(req.body.purpose),
+      // purpose: JSON.parse(req.body.purpose),
       paymentMode: JSON.parse(req.body.paymentMode),
       notes: req.body.notes,
       organization: req.user.organization,
@@ -47,7 +47,7 @@ async function updateExpense(req, res) {
       amount: req.body.amount,
       date: req.body.date,
       category: JSON.parse(req.body.category),
-      purpose: JSON.parse(req.body.purpose),
+      // purpose: JSON.parse(req.body.purpose),
       paymentMode: JSON.parse(req.body.paymentMode),
       notes: req.body.notes,
     };

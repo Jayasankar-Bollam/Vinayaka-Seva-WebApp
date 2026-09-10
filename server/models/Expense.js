@@ -11,7 +11,7 @@ const expenseSchema = new mongoose.Schema(
     },
     date: { type: Date, required: true, default: Date.now },
     category: otherField(['Pooja Items', 'Lighting/Deepam', 'Flowers', 'Prasadam', 'Maintenance']),
-    purpose: otherField(['Oil', 'Camphor', 'Flowers', 'Decoration', 'Electricity']),
+    // purpose: otherField(['Oil', 'Camphor', 'Flowers', 'Decoration', 'Electricity']),
     amount: { type: Number, required: true, min: 0 },
     paymentMode: otherField(['Cash', 'PhonePe', 'GPay', 'Bank Transfer']),
     receiptUrl: { type: String, trim: true },

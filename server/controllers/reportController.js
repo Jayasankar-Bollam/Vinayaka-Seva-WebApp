@@ -87,7 +87,7 @@ async function expenseReport(req, res) {
     const rows = expenses.map((e) => [
       new Date(e.date).toLocaleDateString('en-IN'),
       displayValue(e.category),
-      displayValue(e.purpose),
+      // displayValue(e.purpose),
       displayValue(e.paymentMode),
       `Rs. ${e.amount.toLocaleString('en-IN')}`,
     ]);
@@ -100,7 +100,7 @@ async function expenseReport(req, res) {
     const html = buildReportHtml({
       org,
       reportTitle: title,
-      columns: ['Date', 'Category', 'Purpose', 'Payment Mode', 'Amount'],
+      columns: ['Date', 'Category',  'Payment Mode', 'Amount'],
       rows,
       totalLabel: 'Total Expenses',
       totalValue: `Rs. ${total.toLocaleString('en-IN')}`,
