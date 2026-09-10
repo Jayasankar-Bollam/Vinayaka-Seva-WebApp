@@ -14,6 +14,7 @@ const expenseSchema = new mongoose.Schema(
     purpose: otherField(['Oil', 'Camphor', 'Flowers', 'Decoration', 'Electricity']),
     amount: { type: Number, required: true, min: 0 },
     paymentMode: otherField(['Cash', 'PhonePe', 'GPay', 'Bank Transfer']),
+    receiptUrl: { type: String, trim: true },
     notes: { type: String, trim: true },
   },
   { timestamps: true }

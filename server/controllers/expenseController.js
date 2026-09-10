@@ -2,16 +2,26 @@
 const Expense = require('../models/Expense');
 
 async function createExpense(req, res) {
+   console.log('req.body:', req.body);
+  console.log('req.file:', req.file);
   try {
     const expense = await Expense.create({
-      ...req.body,
-      organization: req.user.organization, // always from the token, never the client
+      amount: req.body.amount,
+      date: req.body.date,
+      category: JSON.parse(req.body.category),
+      purpose: JSON.parse(req.body.purpose),
+      paymentMode: JSON.parse(req.body.paymentMode),
+      notes: req.body.notes,
+      organization: req.user.organization,
+      receiptUrl: req.file ? req.file.path : undefined,
     });
     res.status(201).json(expense);
   } catch (err) {
     res.status(400).json({ message: 'Failed to create expense', error: err.message });
   }
 }
+
+
 
 async function getExpenses(req, res) {
   try {
@@ -33,9 +43,22 @@ async function getExpenses(req, res) {
 
 async function updateExpense(req, res) {
   try {
+    const updateData = {
+      amount: req.body.amount,
+      date: req.body.date,
+      category: JSON.parse(req.body.category),
+      purpose: JSON.parse(req.body.purpose),
+      paymentMode: JSON.parse(req.body.paymentMode),
+      notes: req.body.notes,
+    };
+
+    if (req.file) {
+      updateData.receiptUrl = req.file.path; // only overwrite if a new receipt was uploaded
+    }
+
     const expense = await Expense.findOneAndUpdate(
       { _id: req.params.id, organization: req.user.organization },
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
 
