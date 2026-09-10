@@ -199,12 +199,12 @@ export default function ExpensePage() {
           value={form.category}
           onChange={(val) => setForm({ ...form, category: val })}
         />
-        <SelectWithOther
+        {/* <SelectWithOther
           label="Purpose"
           options={PURPOSES}
           value={form.purpose}
           onChange={(val) => setForm({ ...form, purpose: val })}
-        />
+        /> */}
         <SelectWithOther
           label="Payment Mode"
           options={PAYMENT_MODES}
